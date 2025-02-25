@@ -1,0 +1,139 @@
+import pygame
+
+class LeftSidebar:
+    def __init__(self, screen):
+        """Initialize the sidebar with structured panels and interactive buttons."""
+        self.screen = screen
+        self.width, self.height = screen.get_size()
+
+        self.sidebar_width = 200  # Sidebar width
+        self.sidebar_rect = pygame.Rect(0, 0, self.sidebar_width, self.height)  # Sidebar background
+
+        # Define sections within the sidebar (Bank, Player Info, Buttons)
+        self.bank_section = pygame.Rect(10, 10, self.sidebar_width - 20, 80)
+        self.sell_property_button = pygame.Rect(10, self.bank_section.bottom + 10, self.sidebar_width - 20, 40)
+        self.sell_house_button = pygame.Rect(10, self.sell_property_button.bottom + 10, self.sidebar_width - 20, 40)
+        self.player_info_section = pygame.Rect(10, self.height // 2 - 70, self.sidebar_width - 20, 100)
+        self.view_properties_button = pygame.Rect(10, self.player_info_section.bottom + 10, self.sidebar_width - 20, 40)
+
+        self.bank_balance = 50000
+
+        # Mock Data for Testing
+        self.selected_player = 1
+        self.players = {
+            1: ("Hatstand", 1500),
+            2: ("Boot", 1400)
+        }
+
+        # Popup States
+        self.active_popup = None  # Determines which pop-up is currently open
+        self.popup_titles = {
+            "view_properties": "Owned Properties",
+            "sell_property": "Sell Property",
+            "sell_house": "Sell House"
+        }
+
+        # Sidebar popup settings (consistent size for all)
+        self.popup_rect = pygame.Rect(10, self.view_properties_button.bottom + 10, self.sidebar_width - 20, self.height - (self.view_properties_button.bottom + 30))
+        self.close_button_rect = None  # Close button rect for event handling
+        self.close_button_hovered = False  # Track hover state for close button
+
+    def draw(self):
+        """Draw the sidebar with structured sections and interactive buttons."""
+        # Draw sidebar background
+        pygame.draw.rect(self.screen, (50, 50, 50), self.sidebar_rect)  # Dark background
+        pygame.draw.rect(self.screen, (0, 0, 0), self.sidebar_rect, 2)  # Border around the sidebar
+
+        # Draw Bank Section
+        pygame.draw.rect(self.screen, (0, 100, 0), self.bank_section)  # Green background for Bank
+        pygame.draw.rect(self.screen, (0, 0, 0), self.bank_section, 2)  # Border around bank section
+        bank_title = pygame.font.Font(None, 28).render("Bank", True, (255, 255, 255))
+        self.screen.blit(bank_title, (self.bank_section.x + 10, self.bank_section.y + 10))
+        bank_balance_text = pygame.font.Font(None, 24).render(f"Balance: £{self.bank_balance}", True, (255, 255, 255))
+        self.screen.blit(bank_balance_text, (self.bank_section.x + 10, self.bank_section.y + 40))
+
+        # Draw Buttons
+        self.highlight_button(self.sell_property_button, (255, 0, 0), "Sell Property")
+        self.highlight_button(self.sell_house_button, (255, 0, 0), "Sell House")
+
+        # Draw Player Info Panel
+        pygame.draw.rect(self.screen, (0, 0, 128), self.player_info_section)  # Dark Blue background
+        pygame.draw.rect(self.screen, (0, 0, 0), self.player_info_section, 2)  # Border around player info
+
+        if self.selected_player:
+            player_token = self.players[self.selected_player][0]  # Get the selected player's token
+            player_balance = self.players[self.selected_player][1]  # Get the selected player's balance
+
+            player_text = pygame.font.Font(None, 26).render(f"Player {self.selected_player}", True, (255, 255, 255))
+            token_text = pygame.font.Font(None, 22).render(f"Token: {player_token}", True, (255, 255, 255))
+            balance_text = pygame.font.Font(None, 22).render(f"Balance: £{player_balance}", True, (255, 255, 255))
+
+            self.screen.blit(player_text, (self.player_info_section.x + 10, self.player_info_section.y + 10))
+            self.screen.blit(token_text, (self.player_info_section.x + 10, self.player_info_section.y + 40))
+            self.screen.blit(balance_text, (self.player_info_section.x + 10, self.player_info_section.y + 65))
+
+        self.highlight_button(self.view_properties_button, (255, 0, 0), "View Properties")
+
+        # Draw the popup inside the sidebar when active
+        if self.active_popup:
+            self.draw_property_popup()
+
+    def highlight_button(self, button_rect, color, text):
+        """Highlights the button if the mouse is hovering over it."""
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        # Highlight when hovering
+        if button_rect.collidepoint(mouse_x, mouse_y):
+            pygame.draw.rect(self.screen, color, button_rect)
+            button_text = pygame.font.Font(None, 26).render(text, True, (255, 255, 255))
+        else:
+            pygame.draw.rect(self.screen, (100, 100, 100), button_rect)  # Default color
+            button_text = pygame.font.Font(None, 26).render(text, True, (0, 0, 0))
+
+        self.screen.blit(button_text, (button_rect.x + 10, button_rect.y + 10))
+
+    def draw_property_popup(self):
+        """Draws a pop-up menu for different actions inside the sidebar."""
+        pygame.draw.rect(self.screen, (200, 200, 200), self.popup_rect)  # Light gray background
+        pygame.draw.rect(self.screen, (0, 0, 0), self.popup_rect, 2)  # Border
+
+        title = pygame.font.Font(None, 22).render(self.popup_titles[self.active_popup], True, (0, 0, 0))
+        self.screen.blit(title, (self.popup_rect.x + 10, self.popup_rect.y + 10))
+
+        # Close Button inside the sidebar (now highlights)
+        self.close_button_rect = pygame.Rect(self.popup_rect.x + 50, self.popup_rect.y + self.popup_rect.height - 40, 100, 30)
+        self.highlight_close_button()
+
+    def highlight_close_button(self):
+        """Draws the close button with hover effect."""
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        if self.close_button_rect.collidepoint(mouse_x, mouse_y):
+            self.close_button_hovered = True
+            button_color = (180, 0, 0)  # Darker red when hovered
+        else:
+            self.close_button_hovered = False
+            button_color = (255, 0, 0)  # Normal red
+
+        pygame.draw.rect(self.screen, button_color, self.close_button_rect)
+        close_text = pygame.font.Font(None, 20).render("Close", True, (255, 255, 255))
+        self.screen.blit(close_text, (self.close_button_rect.x + 30, self.close_button_rect.y + 5))
+
+    def handle_event(self, event):
+        """Handles button clicks and pop-up interactions."""
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = event.pos
+
+            if self.view_properties_button.collidepoint(x, y):
+                self.toggle_popup("view_properties")
+            elif self.sell_property_button.collidepoint(x, y):
+                self.toggle_popup("sell_property")
+            elif self.sell_house_button.collidepoint(x, y):
+                self.toggle_popup("sell_house")
+
+            if self.active_popup and self.close_button_rect and self.close_button_rect.collidepoint(x, y):
+                self.active_popup = None
+
+    def toggle_popup(self, popup_type):
+        """Toggles pop-ups, ensuring only one is active at a time."""
+        self.active_popup = popup_type if self.active_popup != popup_type else None

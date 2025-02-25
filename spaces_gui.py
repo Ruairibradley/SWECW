@@ -41,26 +41,43 @@ class SpacesGUI:
                 pygame.draw.rect(screen, self.property_colors[self.color],
                                  (self.rect.x, self.rect.y, color_bar_size, self.rect.height))
 
-        # Draw text
-        font_size = int(self.rect.height * 0.22)  # Large font for readability
+        # **Text Rendering Fix for Long Names**
+        font_size = int(self.rect.height * 0.22)  # Standard font size
         font = pygame.font.Font(None, font_size)
 
         words = self.name.split()
-        if len(words) > 1:
-            line1 = " ".join(words[:len(words) // 2])
-            line2 = " ".join(words[len(words) // 2:])
-        else:
+
+        # **Special Formatting for "The Angel Delights"**
+        if self.name.lower() == "the angel delights":
+            line1 = "The Angel"
+            line2 = "Delights"
+            line3 = ""
+        elif len(words) == 3:  # Split into 3 lines
+            line1 = words[0]
+            line2 = words[1]
+            line3 = words[2]
+        elif len(words) == 2:  # Standard 2-line format
+            line1 = words[0]
+            line2 = words[1]
+            line3 = ""
+        else:  # Single-word names stay as one line
             line1 = self.name
             line2 = ""
+            line3 = ""
 
+        # **Center text properly**
         text_surface1 = font.render(line1, True, (0, 0, 0))
         text_surface2 = font.render(line2, True, (0, 0, 0))
+        text_surface3 = font.render(line3, True, (0, 0, 0)) if line3 else None
 
-        text_rect1 = text_surface1.get_rect(center=(self.rect.centerx, self.rect.centery - font_size // 2))
-        text_rect2 = text_surface2.get_rect(center=(self.rect.centerx, self.rect.centery + font_size // 2))
+        text_rect1 = text_surface1.get_rect(center=(self.rect.centerx, self.rect.centery - font_size))
+        text_rect2 = text_surface2.get_rect(center=(self.rect.centerx, self.rect.centery))
+        text_rect3 = text_surface3.get_rect(center=(self.rect.centerx, self.rect.centery + font_size)) if text_surface3 else None
 
         screen.blit(text_surface1, text_rect1)
         screen.blit(text_surface2, text_rect2)
+        if text_surface3:
+            screen.blit(text_surface3, text_rect3)
 
         # Draw highlight effect if hovered
         if self.highlighted:

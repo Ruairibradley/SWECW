@@ -4,7 +4,7 @@ import random
 
 class TokenSelectionScreen:
     def __init__(self, screen, human_players, ai_players):
-        """Initialize the token selection screen."""
+        """Initialize the token selection screen with the dark grey theme."""
         self.screen = screen
         self.width, self.height = screen.get_size()
         self.font = pygame.font.Font(None, 36)
@@ -42,11 +42,11 @@ class TokenSelectionScreen:
         return token_images
 
     def draw(self):
-        """Draws the token selection screen."""
-        self.screen.fill((173, 216, 230))  # Light Blue Background
+        """Draws the token selection screen with a dark grey theme."""
+        self.screen.fill((50, 50, 50))  # Dark Grey Background
 
         # Show which player's turn it is
-        title_text = self.font.render(f"Player {self.current_player}, select your token:", True, (0, 0, 0))
+        title_text = self.font.render(f"Player {self.current_player}, select your token:", True, (255, 255, 255))
         self.screen.blit(title_text, (self.width // 2 - title_text.get_width() // 2, 50))
 
         # Display available tokens
@@ -60,33 +60,29 @@ class TokenSelectionScreen:
 
             # Draw selection box
             token_rect = pygame.Rect(x, y, 80, 80)
-            pygame.draw.rect(self.screen, (0, 0, 0), token_rect, 2)
+            pygame.draw.rect(self.screen, (255, 255, 255), token_rect, 2)  # White border
 
             # Highlight the selected token
             if self.selected_tokens.get(self.current_player) == token:
-                pygame.draw.rect(self.screen, (0, 255, 0), token_rect, 3)
+                pygame.draw.rect(self.screen, (255, 0, 0), token_rect, 3)  # Green highlight for selected token
 
         # Display selected tokens list
         y_selected_start = 300
-        selected_text = self.font.render("Selected Tokens:", True, (0, 0, 0))
+        selected_text = self.font.render("Selected Tokens:", True, (255, 255, 255))
         self.screen.blit(selected_text, (100, y_selected_start))
 
         for player, token in self.selected_tokens.items():
             confirmed_status = "✔" if player in self.confirmed_players else ""
-            token_text = self.font.render(f"Player {player}: {token} {confirmed_status}", True, (0, 0, 0))
+            token_text = self.font.render(f"Player {player}: {token} {confirmed_status}", True, (255, 255, 255))
             self.screen.blit(token_text, (100, y_selected_start + player * 30))
 
         # Confirm Button (Only enabled if a token is selected)
         if self.selected_tokens.get(self.current_player) and self.current_player not in self.confirmed_players:
-            pygame.draw.rect(self.screen, (255, 0, 0), self.confirm_button_rect)
-            confirm_text = self.font.render("Confirm", True, (0, 0, 0))
-            self.screen.blit(confirm_text, (self.confirm_button_rect.x + 30, self.confirm_button_rect.y + 10))
+            self.highlight_button(self.confirm_button_rect, (200, 0, 0), "Confirm")  # Dark Red confirm button
 
         # If all players confirmed, start the game
         if len(self.confirmed_players) == self.human_players + self.ai_players:
-            pygame.draw.rect(self.screen, (0, 255, 0), self.confirm_button_rect)
-            start_text = self.font.render("Start Game", True, (0, 0, 0))
-            self.screen.blit(start_text, (self.confirm_button_rect.x + 25, self.confirm_button_rect.y + 10))
+            self.highlight_button(self.confirm_button_rect, (0, 200, 0), "Start Game")  # Dark Green start game button
 
         pygame.display.flip()
 
@@ -148,3 +144,15 @@ class TokenSelectionScreen:
     def get_selected_tokens(self):
         """Returns the final selected tokens mapping."""
         return self.selected_tokens
+
+    def highlight_button(self, button_rect, color, text):
+        """Highlights the button if the mouse is hovering over it."""
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        if button_rect.collidepoint(mouse_x, mouse_y):
+            pygame.draw.rect(self.screen, color, button_rect)  # Highlight color
+        else:
+            pygame.draw.rect(self.screen, (100, 100, 100), button_rect)  # Default gray color
+
+        button_text = pygame.font.Font(None, 28).render(text, True, (255, 255, 255))  # White text
+        self.screen.blit(button_text, (button_rect.x + 20, button_rect.y + 10))  # Draw button text

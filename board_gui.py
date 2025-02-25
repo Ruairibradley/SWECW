@@ -3,18 +3,15 @@ from spaces_gui import SpacesGUI  # Import the SpacesGUI class
 
 class BoardGUI:
     def __init__(self, board_size=750, window_width=1200, window_height=750):
-        """Initialize the Monopoly board ensuring no gaps in tiles."""
         self.board_size = board_size
         self.window_width = window_width
         self.window_height = window_height
         self.tile_size = self.board_size // 11  # Ensures exact 11 tiles per side
         self.board_offset_x = (self.window_width - self.board_size) // 2  # Centering the board
         self.board_offset_y = 0  # Keep the board at the top
-
         self.spaces = self.initialize_spaces()
 
     def initialize_spaces(self):
-        """Creates board spaces using SpacesGUI ensuring perfect alignment."""
         board_layout = [
             ("Go", None), ("The Old Creek", "Brown"), ("Pot Luck", None), ("Gangsters Paradise", "Brown"),
             ("Income Tax", None), ("Brighton Station", "Station"), ("The Angels Delight", "Blue"),
@@ -72,6 +69,7 @@ class BoardGUI:
                 board_layout[i + 30][0], board_layout[i + 30][1], "right"))
 
         return spaces
+
 
     def draw(self, screen):
         """Draw the Monopoly board using SpacesGUI."""

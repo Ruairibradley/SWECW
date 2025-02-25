@@ -4,6 +4,10 @@ import time
 from board_gui import BoardGUI
 from pregame_screen_gui import PreGameScreen
 from token_selection_gui import TokenSelectionScreen
+from left_sidebar_gui import LeftSidebar
+from board_elements import BoardElementsGUI
+from dice_gui import DiceGUI  # Import Dice System
+from right_sidebar_gui import RightSidebar
 
 class GameGUI:
     def __init__(self, width=1200, height=750):
@@ -27,6 +31,10 @@ class GameGUI:
         self.pregame_screen = PreGameScreen(self.screen)
         self.token_selection_screen = None
         self.board = None
+        self.sidebar = LeftSidebar(self.screen)
+        self.right_sidebar = RightSidebar(self.screen)
+        self.elements = None  # Initialize later in board state
+        self.dice = DiceGUI(self.screen)  # Initialize Dice Rolling System
 
         # Player and Game Data
         self.players = {}  # Dictionary of {player_number: token_name}
@@ -48,10 +56,13 @@ class GameGUI:
             self.token_selection_screen.draw()
         elif self.state == "board":
             self.screen.fill((200, 200, 200))  # Light gray background
-            self.board.draw(self.screen)
 
-            # Draw the tokens on the board
-            self.draw_tokens_on_board()
+            self.board.draw(self.screen)  # Draw Board
+            self.elements.draw()  # Draw Board Elements (Pot Luck, Opportunity Knocks)
+            self.sidebar.draw()  # Draw Sidebar
+            self.right_sidebar.draw()
+            self.dice.draw()  # Draw Dice Rolling System
+            self.draw_tokens_on_board()  # **✅ Ensure tokens are drawn on the board**
 
             # Display time remaining if in abridged mode
             if self.time_limit_seconds:
@@ -87,18 +98,18 @@ class GameGUI:
             elif self.state == "token_selection":
                 result = self.token_selection_screen.handle_event(event)
                 if result == "confirmed":
-                    # If all players confirmed, start the game
                     if len(self.token_selection_screen.confirmed_players) == self.human_players + self.ai_players:
                         self.start_board_game()
 
             elif self.state == "board":
                 self.handle_board_events(event)
+                self.dice.handle_event(event)  # Handle Dice Events
+                self.sidebar.handle_event(event)  # Handle Sidebar Events
 
     def start_token_selection(self):
         """Moves to the token selection screen after pregame setup."""
         self.human_players = self.pregame_screen.num_human_players
         self.ai_players = self.pregame_screen.num_ai_players
-        total_players = self.human_players + self.ai_players
 
         self.token_selection_screen = TokenSelectionScreen(self.screen, self.human_players, self.ai_players)
         self.state = "token_selection"
@@ -115,6 +126,7 @@ class GameGUI:
 
         # Create the board using the settings from PreGameScreen
         self.board = BoardGUI(board_size=750, window_width=self.width, window_height=self.height)
+        self.elements = BoardElementsGUI(self.screen)  # Initialize Board Elements
 
         # Apply the abridged mode time limit if applicable
         if self.pregame_screen.selected_mode == "Abridged" and self.pregame_screen.time_limit.isdigit():
@@ -125,44 +137,33 @@ class GameGUI:
         self.state = "board"
 
     def draw_tokens_on_board(self):
-        """Draw the player tokens on the board at their current position."""
-        # Predefined starting position for the first token (on the GO tile)
+        """Draws the player tokens on the board at their starting position (GO tile)."""
         base_position = self.board.spaces[0].rect.center  # Center of the GO tile
 
-        # Define horizontal and vertical offsets
-        horizontal_offset = 20 # Horizontal space between tokens (adjust for better spacing)
-        vertical_offset = 35 # Vertical space between rows
+        # Define offsets for token spacing
+        horizontal_offset = 25  # Space between tokens
+        vertical_offset = 35  # Space between rows
 
-        # Get the total number of players (human + AI)
         total_players = self.human_players + self.ai_players
-
-        # Determine the number of players in each row
         mid_point = total_players // 2  # Half of the total players (for even division)
 
-        # Loop through players to place them on the board
         for i, (player, token_name) in enumerate(self.players.items()):
             token_image = self.token_images.get(player)
             if token_image:
-                # Decide whether to place the player in the first row or second row
                 if i < mid_point:
-                    # First row (players 1 to mid_point)
                     x_offset = base_position[0] - (mid_point * horizontal_offset // 2) + (i * horizontal_offset)
-                    y_offset = base_position[1] - vertical_offset // 2  # Keep in the top row
+                    y_offset = base_position[1] - vertical_offset // 2  # First row
                 else:
-                    # Second row (players mid_point+1 to end)
                     x_offset = base_position[0] - (mid_point * horizontal_offset // 2) + (
-                                (i - mid_point) * horizontal_offset)
-                    y_offset = base_position[1] + vertical_offset // 2  # Place below the first row
+                            (i - mid_point) * horizontal_offset)
+                    y_offset = base_position[1] + vertical_offset // 2  # Second row
 
-                # Scale the token to fit the tile while maintaining the aspect ratio
                 tile_rect = self.board.spaces[0].rect  # Use GO tile's size for scaling
                 token_width = tile_rect.width * 0.35
                 token_height = tile_rect.height * 0.35
                 token_image = pygame.transform.scale(token_image, (int(token_width), int(token_height)))
 
-                # Position the token on the board (center it on the calculated position)
-                self.screen.blit(token_image,
-                                 (x_offset - token_image.get_width() // 2, y_offset - token_image.get_height() // 2))
+                self.screen.blit(token_image, (x_offset - token_image.get_width() // 2, y_offset - token_image.get_height() // 2))
 
     def handle_board_events(self, event):
         """Handles interactions when on the board screen."""
@@ -195,16 +196,5 @@ class GameGUI:
             self.draw()
             self.clock.tick(30)  # Limit FPS to 30
 
-        pygame.quit()
-        sys.exit()
-
-
-# Run the game
-if __name__ == "__main__":
-    try:
-        game_gui = GameGUI()
-        game_gui.run()
-    except Exception as e:
-        print(f"An error occurred: {e}")
         pygame.quit()
         sys.exit()
