@@ -1,0 +1,257 @@
+<html>
+<head>
+<title>game.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #2aacb8;}
+.s4 { color: #5f826b; font-style: italic;}
+.s5 { color: #6aab73;}
+.s6 { color: #7a7e85;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+game.py</font>
+</center></td></tr></table>
+<pre><span class="s0">from </span><span class="s1">player </span><span class="s0">import </span><span class="s1">Player</span>
+<span class="s0">from </span><span class="s1">property </span><span class="s0">import </span><span class="s1">Property</span>
+<span class="s0">from </span><span class="s1">bank </span><span class="s0">import </span><span class="s1">Bank</span>
+
+
+<span class="s0">class </span><span class="s1">Game</span><span class="s2">:</span>
+
+    <span class="s0">def </span><span class="s1">__init__</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">player_names</span><span class="s2">, </span><span class="s1">tokens</span><span class="s2">):</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">players </span><span class="s2">= [</span><span class="s1">Player</span><span class="s2">(</span><span class="s1">name</span><span class="s2">, </span><span class="s1">token</span><span class="s2">, </span><span class="s1">self</span><span class="s2">) </span><span class="s0">for </span><span class="s1">name</span><span class="s2">, </span><span class="s1">token </span><span class="s0">in </span><span class="s1">zip</span><span class="s2">(</span><span class="s1">player_names</span><span class="s2">, </span><span class="s1">tokens</span><span class="s2">)]</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">current_player_index </span><span class="s2">= </span><span class="s3">0</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">running </span><span class="s2">= </span><span class="s0">True</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">bank </span><span class="s2">= </span><span class="s1">Bank</span><span class="s2">()</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">fines </span><span class="s2">= </span><span class="s3">0</span>
+
+    <span class="s0">def </span><span class="s1">play_turn</span><span class="s2">(</span><span class="s1">self</span><span class="s2">):</span>
+        <span class="s4">&quot;&quot;&quot;Handles a single player's turn &quot;&quot;&quot;</span>
+        <span class="s1">player </span><span class="s2">= </span><span class="s1">self</span><span class="s2">.</span><span class="s1">players</span><span class="s2">[</span><span class="s1">self</span><span class="s2">.</span><span class="s1">current_player_index</span><span class="s2">]</span>
+        <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">\n</span><span class="s5">🎲 </span><span class="s0">{</span><span class="s1">player</span><span class="s2">.</span><span class="s1">name</span><span class="s0">}</span><span class="s5">'s turn!&quot;</span><span class="s2">)</span>
+        <span class="s1">player</span><span class="s2">.</span><span class="s1">consecutive_doubles </span><span class="s2">= </span><span class="s3">0</span>
+
+        <span class="s1">double </span><span class="s2">= </span><span class="s1">player</span><span class="s2">.</span><span class="s1">move</span><span class="s2">()</span>
+
+        <span class="s0">if </span><span class="s1">player</span><span class="s2">.</span><span class="s1">position </span><span class="s0">in </span><span class="s2">[</span><span class="s3">4</span><span class="s2">, </span><span class="s3">38</span><span class="s2">]:  </span><span class="s6"># Income Tax &amp; Luxury Tax</span>
+            <span class="s1">tax_amount </span><span class="s2">= </span><span class="s3">200 </span><span class="s0">if </span><span class="s1">player</span><span class="s2">.</span><span class="s1">position </span><span class="s2">== </span><span class="s3">4 </span><span class="s0">else </span><span class="s3">75</span>
+            <span class="s1">player</span><span class="s2">.</span><span class="s1">pay_tax</span><span class="s2">(</span><span class="s1">tax_amount</span><span class="s2">)</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">fines </span><span class="s2">+= </span><span class="s1">tax_amount</span>
+
+        <span class="s0">elif </span><span class="s1">player</span><span class="s2">.</span><span class="s1">position </span><span class="s0">in </span><span class="s2">[</span><span class="s3">3</span><span class="s2">, </span><span class="s3">18</span><span class="s2">, </span><span class="s3">34</span><span class="s2">]:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;Pot luck&quot;</span><span class="s2">)</span>
+
+        <span class="s0">elif </span><span class="s1">player</span><span class="s2">.</span><span class="s1">position </span><span class="s0">in </span><span class="s2">[</span><span class="s3">8</span><span class="s2">, </span><span class="s3">23</span><span class="s2">, </span><span class="s3">37</span><span class="s2">]:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;Oppurtunity Knocks&quot;</span><span class="s2">)</span>
+
+        <span class="s0">elif </span><span class="s1">player</span><span class="s2">.</span><span class="s1">position </span><span class="s2">== </span><span class="s3">31</span><span class="s2">:</span>
+            <span class="s1">player</span><span class="s2">.</span><span class="s1">go_to_jail</span><span class="s2">()</span>
+
+        <span class="s0">elif </span><span class="s1">player</span><span class="s2">.</span><span class="s1">position </span><span class="s2">== </span><span class="s3">21</span><span class="s2">:</span>
+            <span class="s1">player</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">+= </span><span class="s1">self</span><span class="s2">.</span><span class="s1">fines</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">fines </span><span class="s2">= </span><span class="s3">0</span>
+
+        <span class="s0">elif </span><span class="s1">player</span><span class="s2">.</span><span class="s1">position </span><span class="s2">== </span><span class="s3">1</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot; </span><span class="s0">{</span><span class="s1">player</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">has landed at Go!&quot;</span><span class="s2">)</span>
+
+        <span class="s0">elif </span><span class="s1">player</span><span class="s2">.</span><span class="s1">position </span><span class="s2">== </span><span class="s3">11 </span><span class="s0">and </span><span class="s1">player</span><span class="s2">.</span><span class="s1">in_jail </span><span class="s2">== </span><span class="s0">False</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">player</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">is visiting jail&quot;</span><span class="s2">)</span>
+
+        <span class="s0">else</span><span class="s2">:</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">handle_property</span><span class="s2">(</span><span class="s1">player</span><span class="s2">)</span>
+
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">player_options</span><span class="s2">(</span><span class="s1">player</span><span class="s2">)</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">next_turn</span><span class="s2">(</span><span class="s1">double</span><span class="s2">)</span>
+
+    <span class="s0">def </span><span class="s1">next_turn</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">rolled_doubles</span><span class="s2">):</span>
+        <span class="s4">&quot;&quot;&quot;Moves to the next player's turn unless they rolled doubles.&quot;&quot;&quot;</span>
+        <span class="s0">if not </span><span class="s1">rolled_doubles</span><span class="s2">:</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">current_player_index </span><span class="s2">= (</span><span class="s1">self</span><span class="s2">.</span><span class="s1">current_player_index </span><span class="s2">+ </span><span class="s3">1</span><span class="s2">) % </span><span class="s1">len</span><span class="s2">(</span><span class="s1">self</span><span class="s2">.</span><span class="s1">players</span><span class="s2">)</span>
+
+    <span class="s0">def </span><span class="s1">handle_property</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">player</span><span class="s2">):  </span><span class="s6"># Adjust for property number</span>
+        <span class="s4">&quot;&quot;&quot;Handles property interactions for a player landing on a space.&quot;&quot;&quot;</span>
+        <span class="s0">for </span><span class="s1">landing_spot </span><span class="s0">in </span><span class="s1">self</span><span class="s2">.</span><span class="s1">bank</span><span class="s2">.</span><span class="s1">properties</span><span class="s2">:</span>
+            <span class="s0">if </span><span class="s1">landing_spot</span><span class="s2">.</span><span class="s1">position </span><span class="s2">== </span><span class="s1">player</span><span class="s2">.</span><span class="s1">position</span><span class="s2">:</span>
+                <span class="s0">if </span><span class="s1">landing_spot</span><span class="s2">.</span><span class="s1">owner </span><span class="s0">is None</span><span class="s2">:</span>
+                    <span class="s1">self</span><span class="s2">.</span><span class="s1">prompt_property_purchase</span><span class="s2">(</span><span class="s1">player</span><span class="s2">, </span><span class="s1">landing_spot</span><span class="s2">)</span>
+                <span class="s0">elif </span><span class="s1">landing_spot</span><span class="s2">.</span><span class="s1">owner </span><span class="s2">!= </span><span class="s1">player</span><span class="s2">:</span>
+                    <span class="s1">rent </span><span class="s2">= </span><span class="s1">landing_spot</span><span class="s2">.</span><span class="s1">calculate_rent</span><span class="s2">()</span>
+                    <span class="s1">player</span><span class="s2">.</span><span class="s1">pay_rent</span><span class="s2">(</span><span class="s1">rent</span><span class="s2">, </span><span class="s1">landing_spot</span><span class="s2">.</span><span class="s1">owner</span><span class="s2">)</span>
+                <span class="s0">return</span>
+
+    <span class="s0">def </span><span class="s1">prompt_property_purchase</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">player</span><span class="s2">, </span><span class="s1">landing_spot</span><span class="s2">):</span>
+        <span class="s4">&quot;&quot;&quot;Prompts player to buy property or starts an auction if declined.&quot;&quot;&quot;</span>
+        <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">player</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">landed on </span><span class="s0">{</span><span class="s1">landing_spot</span><span class="s2">.</span><span class="s1">name</span><span class="s0">}</span><span class="s5">. It costs £</span><span class="s0">{</span><span class="s1">landing_spot</span><span class="s2">.</span><span class="s1">price</span><span class="s0">}</span><span class="s5">.&quot;</span><span class="s2">)</span>
+        <span class="s1">choice </span><span class="s2">= </span><span class="s1">input</span><span class="s2">(</span><span class="s5">&quot;Do you want to buy it? (yes/no): &quot;</span><span class="s2">).</span><span class="s1">strip</span><span class="s2">().</span><span class="s1">lower</span><span class="s2">()</span>
+
+        <span class="s0">if </span><span class="s1">choice </span><span class="s2">== </span><span class="s5">&quot;yes&quot; </span><span class="s0">and </span><span class="s1">player</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">&gt;= </span><span class="s1">landing_spot</span><span class="s2">.</span><span class="s1">price</span><span class="s2">:</span>
+            <span class="s1">player</span><span class="s2">.</span><span class="s1">buy_property</span><span class="s2">(</span><span class="s1">landing_spot</span><span class="s2">)</span>
+        <span class="s0">else</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">player</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">declined to buy </span><span class="s0">{</span><span class="s1">landing_spot</span><span class="s2">.</span><span class="s1">name</span><span class="s0">}</span><span class="s5">. Starting auction!&quot;</span><span class="s2">)</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">bank</span><span class="s2">.</span><span class="s1">auction_property</span><span class="s2">(</span><span class="s1">landing_spot</span><span class="s2">, </span><span class="s1">self</span><span class="s2">.</span><span class="s1">players</span><span class="s2">)</span>
+
+    <span class="s0">def </span><span class="s1">player_options</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">player</span><span class="s2">):</span>
+        <span class="s4">&quot;&quot;&quot; 
+        Displays a set of actions the player can take after handling their landing spot. 
+        Options: 
+        - Manage a property 
+        - Propose a trade 
+        - End turn 
+        &quot;&quot;&quot;</span>
+        <span class="s0">while True</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">\n</span><span class="s5">🎲 </span><span class="s0">{</span><span class="s1">player</span><span class="s2">.</span><span class="s1">name</span><span class="s0">}</span><span class="s5">'s Turn Options:&quot;</span><span class="s2">)</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;1️⃣  Manage a Property&quot;</span><span class="s2">)</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;2️⃣  Propose a Trade&quot;</span><span class="s2">)</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;3️⃣  End Turn&quot;</span><span class="s2">)</span>
+
+            <span class="s6"># Get player's choice</span>
+            <span class="s0">try</span><span class="s2">:</span>
+                <span class="s1">choice </span><span class="s2">= </span><span class="s1">int</span><span class="s2">(</span><span class="s1">input</span><span class="s2">(</span><span class="s5">&quot;Enter the number of your choice: &quot;</span><span class="s2">))</span>
+                <span class="s0">if </span><span class="s1">choice </span><span class="s0">not in </span><span class="s2">[</span><span class="s3">1</span><span class="s2">, </span><span class="s3">2</span><span class="s2">, </span><span class="s3">3</span><span class="s2">]:</span>
+                    <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;❌ Invalid choice. Try again.&quot;</span><span class="s2">)</span>
+                    <span class="s0">continue</span>
+            <span class="s0">except </span><span class="s1">ValueError</span><span class="s2">:</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;❌ Please enter a valid number.&quot;</span><span class="s2">)</span>
+                <span class="s0">continue</span>
+
+            <span class="s6"># Execute the selected option</span>
+            <span class="s0">if </span><span class="s1">choice </span><span class="s2">== </span><span class="s3">1</span><span class="s2">:</span>
+                <span class="s1">player</span><span class="s2">.</span><span class="s1">manage_property</span><span class="s2">()</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">player_options</span><span class="s2">(</span><span class="s1">player</span><span class="s2">)</span>
+            <span class="s0">elif </span><span class="s1">choice </span><span class="s2">== </span><span class="s3">2</span><span class="s2">:</span>
+                <span class="s1">other_player </span><span class="s2">= </span><span class="s1">self</span><span class="s2">.</span><span class="s1">select_other_player</span><span class="s2">(</span><span class="s1">player</span><span class="s2">)</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">propose_trade</span><span class="s2">(</span><span class="s1">player</span><span class="s2">, </span><span class="s1">other_player</span><span class="s2">)</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">player_options</span><span class="s2">(</span><span class="s1">player</span><span class="s2">)</span>
+            <span class="s0">elif </span><span class="s1">choice </span><span class="s2">== </span><span class="s3">3</span><span class="s2">:</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;🎲 </span><span class="s0">{</span><span class="s1">player</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">has ended their turn.&quot;</span><span class="s2">)</span>
+                <span class="s0">return  </span><span class="s6"># Exit the loop and move to the next player</span>
+
+    <span class="s0">def </span><span class="s1">propose_trade</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">current_player</span><span class="s2">,  </span><span class="s1">other_player</span><span class="s2">):  </span><span class="s6"># MAYBE MOVE TO GAME CLASS</span>
+
+        <span class="s6"># Allows a player to offer a trade to another player</span>
+        <span class="s6"># The trade can involve money, properties or both</span>
+        <span class="s1">offer_properties </span><span class="s2">= []</span>
+        <span class="s1">request_properties </span><span class="s2">= []</span>
+        <span class="s1">offer_money </span><span class="s2">= </span><span class="s3">0</span>
+        <span class="s1">request_money </span><span class="s2">= </span><span class="s3">0</span>
+
+        <span class="s6"># Property Selection</span>
+        <span class="s0">if </span><span class="s1">current_player</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;</span><span class="s0">\n</span><span class="s5">📋 Your Properties:&quot;</span><span class="s2">)</span>
+            <span class="s0">for </span><span class="s1">i</span><span class="s2">, </span><span class="s1">prop </span><span class="s0">in </span><span class="s1">enumerate</span><span class="s2">(</span><span class="s1">current_player</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">, </span><span class="s3">1</span><span class="s2">):</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">i</span><span class="s0">}</span><span class="s5">. </span><span class="s0">{</span><span class="s1">prop</span><span class="s2">.</span><span class="s1">name</span><span class="s0">}</span><span class="s5">&quot;</span><span class="s2">)</span>
+
+            <span class="s0">try</span><span class="s2">:</span>
+                <span class="s1">choice </span><span class="s2">= </span><span class="s1">input</span><span class="s2">(</span>
+                    <span class="s5">&quot;Enter the numbers of the properties you want to offer (comma-separated) or press Enter to skip: &quot;</span><span class="s2">)</span>
+                <span class="s0">if </span><span class="s1">choice</span><span class="s2">:</span>
+                    <span class="s1">indices </span><span class="s2">= [</span><span class="s1">int</span><span class="s2">(</span><span class="s1">x</span><span class="s2">.</span><span class="s1">strip</span><span class="s2">()) - </span><span class="s3">1 </span><span class="s0">for </span><span class="s1">x </span><span class="s0">in </span><span class="s1">choice</span><span class="s2">.</span><span class="s1">split</span><span class="s2">(</span><span class="s5">&quot;,&quot;</span><span class="s2">)]</span>
+                    <span class="s1">offer_properties </span><span class="s2">= [</span><span class="s1">current_player</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">[</span><span class="s1">i</span><span class="s2">] </span><span class="s0">for </span><span class="s1">i </span><span class="s0">in </span><span class="s1">indices</span><span class="s2">]</span>
+            <span class="s0">except </span><span class="s2">(</span><span class="s1">ValueError</span><span class="s2">, </span><span class="s1">IndexError</span><span class="s2">):</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;❌ Invalid selection.&quot;</span><span class="s2">)</span>
+
+        <span class="s6"># Money offering</span>
+        <span class="s0">try</span><span class="s2">:</span>
+            <span class="s1">offer_money </span><span class="s2">= </span><span class="s1">int</span><span class="s2">(</span><span class="s1">input</span><span class="s2">(</span><span class="s5">&quot;Enter amount of money to offer (or 0 to skip): &quot;</span><span class="s2">))</span>
+            <span class="s0">if </span><span class="s1">offer_money </span><span class="s2">&gt; </span><span class="s1">current_player</span><span class="s2">.</span><span class="s1">balance</span><span class="s2">:</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;❌ You don't have enough money.&quot;</span><span class="s2">)</span>
+                <span class="s1">offer_money </span><span class="s2">= </span><span class="s3">0</span>
+
+        <span class="s0">except </span><span class="s1">ValueError</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;❌ Invalid amount.&quot;</span><span class="s2">)</span>
+
+        <span class="s0">if </span><span class="s1">other_player</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">\n</span><span class="s5">📋 </span><span class="s0">{</span><span class="s1">other_player</span><span class="s2">.</span><span class="s1">name</span><span class="s0">}</span><span class="s5">'s Properties:&quot;</span><span class="s2">)</span>
+            <span class="s0">for </span><span class="s1">i</span><span class="s2">, </span><span class="s1">prop </span><span class="s0">in </span><span class="s1">enumerate</span><span class="s2">(</span><span class="s1">other_player</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">, </span><span class="s3">1</span><span class="s2">):</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">i</span><span class="s0">}</span><span class="s5">. </span><span class="s0">{</span><span class="s1">prop</span><span class="s2">.</span><span class="s1">name</span><span class="s0">}</span><span class="s5">&quot;</span><span class="s2">)</span>
+
+            <span class="s0">try</span><span class="s2">:</span>
+                <span class="s1">choice </span><span class="s2">= </span><span class="s1">input</span><span class="s2">(</span>
+                    <span class="s5">&quot;Enter the numbers of the properties you want in exchange (comma-separated) or press Enter to skip: &quot;</span><span class="s2">)</span>
+                <span class="s0">if </span><span class="s1">choice</span><span class="s2">:</span>
+                    <span class="s1">indices </span><span class="s2">= [</span><span class="s1">int</span><span class="s2">(</span><span class="s1">x</span><span class="s2">.</span><span class="s1">strip</span><span class="s2">()) - </span><span class="s3">1 </span><span class="s0">for </span><span class="s1">x </span><span class="s0">in </span><span class="s1">choice</span><span class="s2">.</span><span class="s1">split</span><span class="s2">(</span><span class="s5">&quot;,&quot;</span><span class="s2">)]</span>
+                    <span class="s1">request_properties </span><span class="s2">= [</span><span class="s1">other_player</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">[</span><span class="s1">i</span><span class="s2">] </span><span class="s0">for </span><span class="s1">i </span><span class="s0">in </span><span class="s1">indices</span><span class="s2">]</span>
+            <span class="s0">except </span><span class="s2">(</span><span class="s1">ValueError</span><span class="s2">, </span><span class="s1">IndexError</span><span class="s2">):</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;❌ Invalid selection.&quot;</span><span class="s2">)</span>
+
+            <span class="s6"># Money request</span>
+        <span class="s0">try</span><span class="s2">:</span>
+            <span class="s1">request_money </span><span class="s2">= </span><span class="s1">int</span><span class="s2">(</span><span class="s1">input</span><span class="s2">(</span><span class="s5">f&quot;Enter amount of money you want in exchange (or 0 to skip): &quot;</span><span class="s2">))</span>
+            <span class="s0">if </span><span class="s1">request_money </span><span class="s2">&gt; </span><span class="s1">other_player</span><span class="s2">.</span><span class="s1">balance</span><span class="s2">:</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;❌ They don't have enough money.&quot;</span><span class="s2">)</span>
+                <span class="s1">request_money </span><span class="s2">= </span><span class="s3">0</span>
+        <span class="s0">except </span><span class="s1">ValueError</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;❌ Invalid amount.&quot;</span><span class="s2">)</span>
+
+            <span class="s6"># Ensure at least something is being exchanged</span>
+        <span class="s0">if not </span><span class="s1">offer_properties </span><span class="s0">and not </span><span class="s1">request_properties </span><span class="s0">and </span><span class="s1">offer_money </span><span class="s2">== </span><span class="s3">0 </span><span class="s0">and </span><span class="s1">request_money </span><span class="s2">== </span><span class="s3">0</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;❌ Trade must involve at least one property or money exchange.&quot;</span><span class="s2">)</span>
+            <span class="s0">return</span>
+
+            <span class="s6"># Confirm trade</span>
+        <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;</span><span class="s0">\n</span><span class="s5">🔄 Trade Offer:&quot;</span><span class="s2">)</span>
+        <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;  </span><span class="s0">{</span><span class="s1">current_player</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">offers: &quot; </span><span class="s2">+ </span><span class="s5">&quot;, &quot;</span><span class="s2">.</span><span class="s1">join</span><span class="s2">([</span><span class="s1">p</span><span class="s2">.</span><span class="s1">name </span><span class="s0">for </span><span class="s1">p </span><span class="s0">in </span><span class="s1">offer_properties</span><span class="s2">]) + (</span>
+            <span class="s5">f&quot; + £</span><span class="s0">{</span><span class="s1">offer_money</span><span class="s0">}</span><span class="s5">&quot; </span><span class="s0">if </span><span class="s1">offer_money </span><span class="s0">else </span><span class="s5">&quot;&quot;</span><span class="s2">))</span>
+        <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;  </span><span class="s0">{</span><span class="s1">other_player</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">offers: &quot; </span><span class="s2">+ </span><span class="s5">&quot;, &quot;</span><span class="s2">.</span><span class="s1">join</span><span class="s2">([</span><span class="s1">p</span><span class="s2">.</span><span class="s1">name </span><span class="s0">for </span><span class="s1">p </span><span class="s0">in </span><span class="s1">request_properties</span><span class="s2">]) + (</span>
+            <span class="s5">f&quot; + £</span><span class="s0">{</span><span class="s1">request_money</span><span class="s0">}</span><span class="s5">&quot; </span><span class="s0">if </span><span class="s1">request_money </span><span class="s0">else </span><span class="s5">&quot;&quot;</span><span class="s2">))</span>
+
+        <span class="s1">confirm </span><span class="s2">= </span><span class="s1">input</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">other_player</span><span class="s2">.</span><span class="s1">name</span><span class="s0">}</span><span class="s5">, do you accept this trade? (yes/no): &quot;</span><span class="s2">).</span><span class="s1">strip</span><span class="s2">().</span><span class="s1">lower</span><span class="s2">()</span>
+        <span class="s0">if </span><span class="s1">confirm </span><span class="s2">== </span><span class="s5">&quot;yes&quot;</span><span class="s2">:</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">execute_trade</span><span class="s2">(</span><span class="s1">current_player</span><span class="s2">, </span><span class="s1">other_player</span><span class="s2">, </span><span class="s1">offer_properties</span><span class="s2">, </span><span class="s1">request_properties</span><span class="s2">, </span><span class="s1">offer_money</span><span class="s2">, </span><span class="s1">request_money</span><span class="s2">)</span>
+        <span class="s0">else</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;❌ Trade declined.&quot;</span><span class="s2">)</span>
+            <span class="s0">return</span>
+
+    <span class="s0">def </span><span class="s1">execute_trade</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">current_player</span><span class="s2">, </span><span class="s1">other_player</span><span class="s2">, </span><span class="s1">offer_properties</span><span class="s2">, </span><span class="s1">request_properties</span><span class="s2">, </span><span class="s1">offer_money</span><span class="s2">, </span><span class="s1">request_money</span><span class="s2">):</span>
+        <span class="s6"># Executes a trade between two players, updating ownerships and balance</span>
+
+        <span class="s6"># Transfer money</span>
+        <span class="s0">if </span><span class="s1">offer_money </span><span class="s2">&gt; </span><span class="s3">0</span><span class="s2">:</span>
+            <span class="s1">current_player</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">-= </span><span class="s1">offer_money</span>
+            <span class="s1">other_player</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">+= </span><span class="s1">offer_money</span>
+        <span class="s0">if </span><span class="s1">request_money </span><span class="s2">&gt; </span><span class="s3">0</span><span class="s2">:</span>
+            <span class="s1">other_player</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">-= </span><span class="s1">request_money</span>
+            <span class="s1">current_player</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">+= </span><span class="s1">request_money</span>
+
+            <span class="s6"># Transfer properties</span>
+        <span class="s0">for </span><span class="s1">prop </span><span class="s0">in </span><span class="s1">offer_properties</span><span class="s2">:</span>
+            <span class="s1">prop</span><span class="s2">.</span><span class="s1">transfer_property</span><span class="s2">(</span><span class="s1">other_player</span><span class="s2">)</span>
+        <span class="s0">for </span><span class="s1">prop </span><span class="s0">in </span><span class="s1">request_properties</span><span class="s2">:</span>
+            <span class="s1">prop</span><span class="s2">.</span><span class="s1">transfer_property</span><span class="s2">(</span><span class="s1">current_player</span><span class="s2">)</span>
+
+        <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;✅ Trade completed successfully!&quot;</span><span class="s2">)  </span><span class="s6"># mA m</span>
+        <span class="s0">return</span>
+
+    <span class="s0">def </span><span class="s1">select_other_player</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">current_player</span><span class="s2">):</span>
+        <span class="s4">&quot;&quot;&quot; 
+        Allows the current player to select another player from the game. 
+        Returns the selected player or None if the selection is invalid. 
+        &quot;&quot;&quot;</span>
+        <span class="s6"># Get a list of all players except the current player</span>
+        <span class="s1">available_players </span><span class="s2">= [</span><span class="s1">p </span><span class="s0">for </span><span class="s1">p </span><span class="s0">in </span><span class="s1">self</span><span class="s2">.</span><span class="s1">players </span><span class="s0">if </span><span class="s1">p </span><span class="s2">!= </span><span class="s1">current_player</span><span class="s2">]</span>
+
+        <span class="s6"># Display available players</span>
+        <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;</span><span class="s0">\n</span><span class="s5">📋 Select a player:&quot;</span><span class="s2">)</span>
+        <span class="s0">for </span><span class="s1">i</span><span class="s2">, </span><span class="s1">player </span><span class="s0">in </span><span class="s1">enumerate</span><span class="s2">(</span><span class="s1">available_players</span><span class="s2">, </span><span class="s3">1</span><span class="s2">):</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">i</span><span class="s0">}</span><span class="s5">. </span><span class="s0">{</span><span class="s1">player</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">(Token: </span><span class="s0">{</span><span class="s1">player</span><span class="s2">.</span><span class="s1">token</span><span class="s0">}</span><span class="s5">)&quot;</span><span class="s2">)</span>
+
+        <span class="s6"># Get player's choice</span>
+        <span class="s0">while True</span><span class="s2">:</span>
+            <span class="s0">try</span><span class="s2">:</span>
+                <span class="s1">choice </span><span class="s2">= </span><span class="s1">int</span><span class="s2">(</span><span class="s1">input</span><span class="s2">(</span><span class="s5">&quot;Enter the number of the player you want to select: &quot;</span><span class="s2">))</span>
+                <span class="s0">if </span><span class="s3">1 </span><span class="s2">&lt;= </span><span class="s1">choice </span><span class="s2">&lt;= </span><span class="s1">len</span><span class="s2">(</span><span class="s1">available_players</span><span class="s2">):</span>
+                    <span class="s0">return </span><span class="s1">available_players</span><span class="s2">[</span><span class="s1">choice </span><span class="s2">- </span><span class="s3">1</span><span class="s2">]  </span><span class="s6"># Return the chosen player</span>
+                <span class="s0">else</span><span class="s2">:</span>
+                    <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;❌ Invalid choice. Try again.&quot;</span><span class="s2">)</span>
+            <span class="s0">except </span><span class="s1">ValueError</span><span class="s2">:</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;❌ Please enter a valid number.&quot;</span><span class="s2">)</span>
+</pre>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<html>
+<head>
+<title>player.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #2aacb8;}
+.s4 { color: #7a7e85;}
+.s5 { color: #6aab73;}
+.s6 { color: #5f826b; font-style: italic;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+player.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">random</span>
+
+<span class="s0">from </span><span class="s1">game </span><span class="s0">import </span><span class="s1">Game</span>
+<span class="s0">from </span><span class="s1">property </span><span class="s0">import </span><span class="s1">Property</span>
+<span class="s0">from </span><span class="s1">bank </span><span class="s0">import </span><span class="s1">Bank</span>
+
+
+<span class="s0">class </span><span class="s1">Player</span><span class="s2">:</span>
+    <span class="s0">def </span><span class="s1">__init__</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">name</span><span class="s2">, </span><span class="s1">token</span><span class="s2">, </span><span class="s1">game</span><span class="s2">):</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">name </span><span class="s2">= </span><span class="s1">name</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">token </span><span class="s2">= </span><span class="s1">token</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">game </span><span class="s2">= </span><span class="s1">game</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">= </span><span class="s3">1500</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">owned_properties </span><span class="s2">= []</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">passed </span><span class="s2">= </span><span class="s0">False</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">in_jail </span><span class="s2">= </span><span class="s0">False</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">position </span><span class="s2">= </span><span class="s3">0</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">get_out_of_jail_cards </span><span class="s2">= </span><span class="s3">0</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">jail_turns </span><span class="s2">= </span><span class="s3">0</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">consecutive_doubles </span><span class="s2">= </span><span class="s3">0</span>
+
+    <span class="s0">def </span><span class="s1">roll_dice</span><span class="s2">(</span><span class="s1">self</span><span class="s2">):</span>
+        <span class="s1">die1</span><span class="s2">, </span><span class="s1">die2 </span><span class="s2">= </span><span class="s1">random</span><span class="s2">.</span><span class="s1">randint</span><span class="s2">(</span><span class="s3">1</span><span class="s2">, </span><span class="s3">6</span><span class="s2">), </span><span class="s1">random</span><span class="s2">.</span><span class="s1">randint</span><span class="s2">(</span><span class="s3">1</span><span class="s2">, </span><span class="s3">6</span><span class="s2">)</span>
+        <span class="s1">double </span><span class="s2">= (</span><span class="s1">die1 </span><span class="s2">== </span><span class="s1">die2</span><span class="s2">)</span>
+        <span class="s0">return </span><span class="s1">die1</span><span class="s2">, </span><span class="s1">die2</span><span class="s2">, </span><span class="s1">double</span>
+
+    <span class="s0">def </span><span class="s1">move</span><span class="s2">(</span><span class="s1">self</span><span class="s2">):  </span><span class="s4"># Handle Jail</span>
+        <span class="s1">die1</span><span class="s2">, </span><span class="s1">die2</span><span class="s2">, </span><span class="s1">double </span><span class="s2">= </span><span class="s1">self</span><span class="s2">.</span><span class="s1">roll_dice</span><span class="s2">()</span>
+        <span class="s0">if </span><span class="s1">double</span><span class="s2">:</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">consecutive_doubles </span><span class="s2">+= </span><span class="s3">1</span>
+            <span class="s0">if </span><span class="s1">self</span><span class="s2">.</span><span class="s1">consecutive_doubles </span><span class="s2">&gt;= </span><span class="s3">3</span><span class="s2">:</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">go_to_jail</span><span class="s2">()</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">consecutive_doubles </span><span class="s2">= </span><span class="s3">0</span>
+                <span class="s0">return</span>
+            <span class="s0">else</span><span class="s2">:</span>
+                <span class="s0">if </span><span class="s1">self</span><span class="s2">.</span><span class="s1">in_jail</span><span class="s2">:</span>
+                    <span class="s1">self</span><span class="s2">.</span><span class="s1">get_out_of_jail</span><span class="s2">()</span>
+        <span class="s0">elif </span><span class="s1">self</span><span class="s2">.</span><span class="s1">in_jail</span><span class="s2">:</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">jail_turns </span><span class="s2">+= </span><span class="s3">1</span>
+            <span class="s0">if </span><span class="s1">self</span><span class="s2">.</span><span class="s1">jail_turns </span><span class="s2">&gt;= </span><span class="s3">3</span><span class="s2">:</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">get_out_of_jail</span><span class="s2">(</span><span class="s0">False</span><span class="s2">, </span><span class="s0">True</span><span class="s2">)</span>
+            <span class="s0">else</span><span class="s2">:</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">stays in jail (Turn </span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">jail_turns</span><span class="s0">}</span><span class="s5">)&quot;</span><span class="s2">)</span>
+                <span class="s0">return </span><span class="s1">self</span><span class="s2">.</span><span class="s1">consecutive_doubles </span><span class="s2">&gt; </span><span class="s3">0</span>
+
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">position </span><span class="s2">= (</span><span class="s1">self</span><span class="s2">.</span><span class="s1">position </span><span class="s2">+ </span><span class="s1">die1 </span><span class="s2">+ </span><span class="s1">die2</span><span class="s2">) % </span><span class="s3">40</span>
+        <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">moves to position </span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">position</span><span class="s0">}</span><span class="s5">&quot;</span><span class="s2">)</span>
+
+    <span class="s0">def </span><span class="s1">go_to_jail</span><span class="s2">(</span><span class="s1">self</span><span class="s2">):  </span><span class="s4"># Adjust for doubles</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">in_jail </span><span class="s2">= </span><span class="s0">True</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">position </span><span class="s2">= </span><span class="s3">11</span>
+        <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">has been sent to jail!&quot;</span><span class="s2">)</span>
+
+    <span class="s0">def </span><span class="s1">get_out_of_jail</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">double</span><span class="s2">=</span><span class="s0">False</span><span class="s2">, </span><span class="s1">turns</span><span class="s2">=</span><span class="s0">False</span><span class="s2">):</span>
+
+        <span class="s0">if </span><span class="s1">self</span><span class="s2">.</span><span class="s1">get_out_of_jail_cards </span><span class="s2">&gt; </span><span class="s3">0</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">uses a Get Out of Jail Free card!&quot;</span><span class="s2">)</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">get_out_of_jail_cards </span><span class="s2">-= </span><span class="s3">1</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">jail_turns </span><span class="s2">= </span><span class="s3">0</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">in_jail </span><span class="s2">= </span><span class="s0">False</span>
+        <span class="s0">elif </span><span class="s1">double</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">Rolled a Double!&quot;</span><span class="s2">)</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">jail_turns </span><span class="s2">= </span><span class="s3">0</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">in_jail </span><span class="s2">= </span><span class="s0">False</span>
+        <span class="s0">elif </span><span class="s1">turns</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">Served 3 turns!&quot;</span><span class="s2">)</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">jail_turns </span><span class="s2">= </span><span class="s3">0</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">in_jail </span><span class="s2">= </span><span class="s0">False</span>
+
+    <span class="s0">def </span><span class="s1">pay_tax</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">amount</span><span class="s2">):</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">-= </span><span class="s1">amount</span>
+        <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">paid income tax of £200!&quot;</span><span class="s2">)</span>
+
+    <span class="s0">def </span><span class="s1">pay_rent</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">landing_spot</span><span class="s2">, </span><span class="s1">roll</span><span class="s2">):</span>
+        <span class="s1">amount_due </span><span class="s2">= </span><span class="s1">landing_spot</span><span class="s2">.</span><span class="s1">calculate_rent</span><span class="s2">(</span><span class="s1">landing_spot</span><span class="s2">, </span><span class="s1">roll</span><span class="s2">)</span>
+        <span class="s1">creditor </span><span class="s2">= </span><span class="s1">landing_spot</span><span class="s2">.</span><span class="s1">owner</span>
+        <span class="s0">if </span><span class="s1">self</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">&gt;= </span><span class="s1">amount_due</span><span class="s2">:</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">-= </span><span class="s1">amount_due</span>
+            <span class="s1">creditor</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">+= </span><span class="s1">amount_due</span>
+        <span class="s0">else</span><span class="s2">:</span>
+            <span class="s1">needed </span><span class="s2">= </span><span class="s1">amount_due </span><span class="s2">- </span><span class="s1">self</span><span class="s2">.</span><span class="s1">balance</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">needs </span><span class="s0">{</span><span class="s1">needed</span><span class="s0">} </span><span class="s5">through selling assets in order to not prevent declaring bankruptcy. &quot;</span><span class="s2">)</span>
+            <span class="s1">creditor</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">+= </span><span class="s1">self</span><span class="s2">.</span><span class="s1">balance</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">= </span><span class="s3">0</span>
+
+    <span class="s0">def </span><span class="s1">select_property</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">action</span><span class="s2">):  </span><span class="s4"># Method so the user selects property to sell</span>
+        <span class="s6">&quot;&quot;&quot; 
+        Helper method to let the user select one of their owned properties. 
+        &quot;&quot;&quot;</span>
+        <span class="s0">if not </span><span class="s1">self</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">has no properties to </span><span class="s0">{</span><span class="s1">action</span><span class="s0">}</span><span class="s5">.&quot;</span><span class="s2">)</span>
+            <span class="s0">return None</span>
+
+        <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot; </span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">name</span><span class="s0">}</span><span class="s5">'s Owned Properties:&quot;</span><span class="s2">)</span>
+        <span class="s0">for </span><span class="s1">idx</span><span class="s2">, </span><span class="s1">prop </span><span class="s0">in </span><span class="s1">enumerate</span><span class="s2">(</span><span class="s1">self</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">, </span><span class="s1">start</span><span class="s2">=</span><span class="s3">1</span><span class="s2">):  </span><span class="s4"># Traverses through the properties</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">idx</span><span class="s0">}</span><span class="s5">. </span><span class="s0">{</span><span class="s1">prop</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">| Price: £</span><span class="s0">{</span><span class="s1">prop</span><span class="s2">.</span><span class="s1">price</span><span class="s0">} </span><span class="s5">| Houses: </span><span class="s0">{</span><span class="s1">prop</span><span class="s2">.</span><span class="s1">houses</span><span class="s0">} </span><span class="s5">| Mortgaged: </span><span class="s0">{</span><span class="s1">prop</span><span class="s2">.</span><span class="s1">mortgaged</span><span class="s0">}</span><span class="s5">&quot;</span><span class="s2">)</span>
+
+        <span class="s0">while True</span><span class="s2">:</span>
+            <span class="s0">try</span><span class="s2">:</span>
+                <span class="s1">choice </span><span class="s2">= </span><span class="s1">int</span><span class="s2">(</span><span class="s1">input</span><span class="s2">(</span><span class="s5">f&quot;Select the property to </span><span class="s0">{</span><span class="s1">action</span><span class="s0">} </span><span class="s5">(1-</span><span class="s0">{</span><span class="s1">len</span><span class="s2">(</span><span class="s1">self</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">)</span><span class="s0">}</span><span class="s5">): &quot;</span><span class="s2">))</span>
+                <span class="s0">if </span><span class="s3">1 </span><span class="s2">&lt;= </span><span class="s1">choice </span><span class="s2">&lt;= </span><span class="s1">len</span><span class="s2">(</span><span class="s1">self</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">):</span>
+                    <span class="s0">return </span><span class="s1">self</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">[</span><span class="s1">choice </span><span class="s2">- </span><span class="s3">1</span><span class="s2">]</span>
+                <span class="s0">else</span><span class="s2">:</span>
+                    <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;Invalid selection. Try again.&quot;</span><span class="s2">)</span>
+            <span class="s0">except </span><span class="s1">ValueError</span><span class="s2">:</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;Invalid input. Please enter a number.&quot;</span><span class="s2">)</span>
+
+    <span class="s0">def </span><span class="s1">avoid_bankruptcy</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">amount_due</span><span class="s2">, </span><span class="s1">creditor</span><span class="s2">):  </span><span class="s4"># Update bank.py and creditor balance</span>
+
+        <span class="s4"># Interactive method allowing the player to choose how to avoid bankruptcy.</span>
+
+        <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">needs to pay </span><span class="s0">{</span><span class="s1">amount_due</span><span class="s0">} </span><span class="s5">to </span><span class="s0">{</span><span class="s1">creditor</span><span class="s2">.</span><span class="s1">name </span><span class="s0">if </span><span class="s1">creditor </span><span class="s0">else </span><span class="s5">'the bank.py'</span><span class="s0">}</span><span class="s5">.&quot;</span><span class="s2">)</span>
+
+        <span class="s0">while </span><span class="s1">self</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">&lt; </span><span class="s1">amount_due</span><span class="s2">:</span>
+
+            <span class="s0">if not </span><span class="s1">self</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">:  </span><span class="s4"># Prevents infinite loop if no assets</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">declare_bankruptcy</span><span class="s2">(</span><span class="s1">creditor</span><span class="s2">, </span><span class="s1">amount_due</span><span class="s2">)</span>
+                <span class="s0">return</span>
+
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot; Current Balance: £</span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">balance</span><span class="s0">}</span><span class="s5">&quot;</span><span class="s2">)</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot; Amount Due: £</span><span class="s0">{</span><span class="s1">amount_due</span><span class="s0">}</span><span class="s5">&quot;</span><span class="s2">)</span>
+
+            <span class="s1">options </span><span class="s2">= []  </span><span class="s4"># Produces the options dynamically so there is no redundancy</span>
+            <span class="s0">if </span><span class="s1">any</span><span class="s2">(</span><span class="s1">p</span><span class="s2">.</span><span class="s1">houses </span><span class="s2">&gt; </span><span class="s3">0 </span><span class="s0">for </span><span class="s1">p </span><span class="s0">in </span><span class="s1">self</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">):  </span><span class="s4"># Checks if the player has any properties with houses</span>
+                <span class="s1">options</span><span class="s2">.</span><span class="s1">append</span><span class="s2">(</span><span class="s5">&quot;1️⃣  Sell Houses/Hotels&quot;</span><span class="s2">)</span>
+            <span class="s0">if </span><span class="s1">any</span><span class="s2">(</span><span class="s0">not </span><span class="s1">p</span><span class="s2">.</span><span class="s1">mortgaged </span><span class="s0">for </span><span class="s1">p </span><span class="s0">in</span>
+                   <span class="s1">self</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">):  </span><span class="s4"># Checks if the player has any unmortgaged properties</span>
+                <span class="s1">options</span><span class="s2">.</span><span class="s1">append</span><span class="s2">(</span><span class="s5">&quot;2️⃣  Mortgage Properties&quot;</span><span class="s2">)</span>
+            <span class="s0">if </span><span class="s1">any</span><span class="s2">(</span><span class="s1">p</span><span class="s2">.</span><span class="s1">houses </span><span class="s2">== </span><span class="s3">0 </span><span class="s0">for </span><span class="s1">p </span><span class="s0">in</span>
+                   <span class="s1">self</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">):  </span><span class="s4"># Checks if the player has any properties available to sell</span>
+                <span class="s1">options</span><span class="s2">.</span><span class="s1">append</span><span class="s2">(</span><span class="s5">&quot;3️⃣  Sell Properties to the Bank&quot;</span><span class="s2">)</span>
+            <span class="s0">if </span><span class="s1">len</span><span class="s2">(</span><span class="s1">self</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">) &gt; </span><span class="s3">1</span><span class="s2">:  </span><span class="s4"># Checks if the player has any available properties to trade</span>
+                <span class="s1">options</span><span class="s2">.</span><span class="s1">append</span><span class="s2">(</span><span class="s5">&quot;4️⃣  Offer a Trade&quot;</span><span class="s2">)</span>
+            <span class="s1">options</span><span class="s2">.</span><span class="s1">append</span><span class="s2">(</span><span class="s5">&quot;5️⃣  Declare Bankruptcy&quot;</span><span class="s2">)</span>
+
+            <span class="s4"># Print available choices</span>
+            <span class="s0">for </span><span class="s1">i</span><span class="s2">, </span><span class="s1">option </span><span class="s0">in </span><span class="s1">enumerate</span><span class="s2">(</span><span class="s1">options</span><span class="s2">, </span><span class="s3">1</span><span class="s2">):</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">i</span><span class="s0">}</span><span class="s5">. </span><span class="s0">{</span><span class="s1">option</span><span class="s0">}</span><span class="s5">&quot;</span><span class="s2">)</span>
+
+            <span class="s4"># Get player's choice</span>
+            <span class="s0">try</span><span class="s2">:</span>
+                <span class="s1">choice </span><span class="s2">= </span><span class="s1">int</span><span class="s2">(</span><span class="s1">input</span><span class="s2">(</span><span class="s5">&quot;Enter the number of your choice: &quot;</span><span class="s2">))</span>
+                <span class="s0">if </span><span class="s1">choice </span><span class="s2">&lt; </span><span class="s3">1 </span><span class="s0">or </span><span class="s1">choice </span><span class="s2">&gt; </span><span class="s1">len</span><span class="s2">(</span><span class="s1">options</span><span class="s2">):</span>
+                    <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;Invalid choice. Try again.&quot;</span><span class="s2">)</span>
+                    <span class="s0">continue</span>
+            <span class="s0">except </span><span class="s1">ValueError</span><span class="s2">:</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;Please enter a number.&quot;</span><span class="s2">)</span>
+                <span class="s0">continue</span>
+
+            <span class="s4"># Execute the chosen option</span>
+            <span class="s1">action </span><span class="s2">= </span><span class="s1">options</span><span class="s2">[</span><span class="s1">choice </span><span class="s2">- </span><span class="s3">1</span><span class="s2">]</span>
+            <span class="s0">if </span><span class="s5">&quot;Sell Houses&quot; </span><span class="s0">in </span><span class="s1">action</span><span class="s2">:</span>
+                <span class="s1">prop </span><span class="s2">= </span><span class="s1">self</span><span class="s2">.</span><span class="s1">select_property</span><span class="s2">(</span><span class="s5">&quot;Sell Houses&quot;</span><span class="s2">)</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">game</span><span class="s2">.</span><span class="s1">bank</span><span class="s2">.</span><span class="s1">sell_houses_to_the_bank</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">prop</span><span class="s2">)</span>
+            <span class="s0">elif </span><span class="s5">&quot;Mortgage&quot; </span><span class="s0">in </span><span class="s1">action</span><span class="s2">:</span>
+                <span class="s1">prop </span><span class="s2">= </span><span class="s1">self</span><span class="s2">.</span><span class="s1">select_property</span><span class="s2">(</span><span class="s5">&quot;Mortgage Property&quot;</span><span class="s2">)</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">game</span><span class="s2">.</span><span class="s1">bank</span><span class="s2">.</span><span class="s1">mortgage_property</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">prop</span><span class="s2">)</span>
+            <span class="s0">elif </span><span class="s5">&quot;Sell Properties&quot; </span><span class="s0">in </span><span class="s1">action</span><span class="s2">:</span>
+                <span class="s1">prop </span><span class="s2">= </span><span class="s1">self</span><span class="s2">.</span><span class="s1">select_property</span><span class="s2">(</span><span class="s5">&quot;Sell Property&quot;</span><span class="s2">)</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">game</span><span class="s2">.</span><span class="s1">bank</span><span class="s2">.</span><span class="s1">sell_property_to_the_bank</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">prop</span><span class="s2">)</span>
+            <span class="s0">elif </span><span class="s5">&quot;Offer a Trade&quot; </span><span class="s0">in </span><span class="s1">action</span><span class="s2">: </span><span class="s4"># Method to select player form game's players</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">game</span><span class="s2">.</span><span class="s1">propose_trade</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, )</span>
+            <span class="s0">elif </span><span class="s5">&quot;Declare Bankruptcy&quot; </span><span class="s0">in </span><span class="s1">action</span><span class="s2">:</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">declare_bankruptcy</span><span class="s2">(</span><span class="s1">creditor</span><span class="s2">, </span><span class="s1">amount_due</span><span class="s2">)</span>
+                <span class="s0">return</span>
+
+            <span class="s4"># Stop if enough money has been raised</span>
+            <span class="s0">if </span><span class="s1">self</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">&gt;= </span><span class="s1">amount_due</span><span class="s2">:</span>
+                <span class="s0">break</span>
+
+            <span class="s4"># Pay the creditor if the balance is sufficient</span>
+        <span class="s0">if </span><span class="s1">self</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">&gt;= </span><span class="s1">amount_due</span><span class="s2">:</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">-= </span><span class="s1">amount_due</span>
+            <span class="s0">if </span><span class="s1">creditor</span><span class="s2">:</span>
+                <span class="s1">creditor</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">+= </span><span class="s1">amount_due</span>
+                <span class="s1">print</span><span class="s2">(</span>
+                    <span class="s5">f&quot; </span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">successfully paid £</span><span class="s0">{</span><span class="s1">amount_due</span><span class="s0">} </span><span class="s5">to </span><span class="s0">{</span><span class="s1">creditor</span><span class="s2">.</span><span class="s1">name </span><span class="s0">if </span><span class="s1">creditor </span><span class="s0">else </span><span class="s5">'the bank.py'</span><span class="s0">}</span><span class="s5">.&quot;</span><span class="s2">)</span>
+        <span class="s0">else</span><span class="s2">:</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">declare_bankruptcy</span><span class="s2">(</span><span class="s1">creditor</span><span class="s2">, </span><span class="s1">amount_due</span><span class="s2">)</span>
+
+    <span class="s0">def </span><span class="s1">declare_bankruptcy</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">creditor</span><span class="s2">, </span><span class="s1">debt</span><span class="s2">):</span>
+        <span class="s5">&quot;&quot;&quot;Handle bankruptcy&quot;&quot;&quot;&quot;&quot;</span>
+
+        <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">is bankrupt! Cannot pay </span><span class="s0">{</span><span class="s1">debt</span><span class="s0">} </span><span class="s5">to </span><span class="s0">{</span><span class="s1">creditor</span><span class="s2">.</span><span class="s1">name </span><span class="s0">if </span><span class="s1">creditor </span><span class="s0">else </span><span class="s5">'the bank.py'</span><span class="s0">}</span><span class="s5">.&quot;</span><span class="s2">)</span>
+        <span class="s0">if </span><span class="s1">creditor</span><span class="s2">:</span>
+            <span class="s0">for </span><span class="s1">properties </span><span class="s0">in </span><span class="s1">self</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">:</span>
+                <span class="s1">properties</span><span class="s2">.</span><span class="s1">transfer_property</span><span class="s2">(</span><span class="s1">creditor</span><span class="s2">)</span>
+
+        <span class="s0">else</span><span class="s2">:</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">return_properties_to_bank</span><span class="s2">()  </span><span class="s4"># Return to bank.py if no creditor</span>
+
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">balance </span><span class="s2">= </span><span class="s3">0</span>
+        <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;💔 </span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">has left the game.&quot;</span><span class="s2">)</span>
+
+    <span class="s0">def </span><span class="s1">return_properties_to_bank</span><span class="s2">(</span><span class="s1">self</span><span class="s2">):</span>
+        <span class="s0">for </span><span class="s1">prop </span><span class="s0">in </span><span class="s1">self</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">:</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">.</span><span class="s1">remove</span><span class="s2">(</span><span class="s1">prop</span><span class="s2">)</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">game</span><span class="s2">.</span><span class="s1">bank</span><span class="s2">.</span><span class="s1">properties</span><span class="s2">.</span><span class="s1">append</span><span class="s2">(</span><span class="s1">prop</span><span class="s2">)</span>
+            <span class="s1">prop</span><span class="s2">.</span><span class="s1">owner </span><span class="s2">= </span><span class="s0">None</span>
+
+    <span class="s0">def </span><span class="s1">manage_property</span><span class="s2">(</span><span class="s1">self</span><span class="s2">):</span>
+        <span class="s6">&quot;&quot;&quot; 
+        Allows the player to select one of their owned properties and manage it. 
+        Available actions: 
+        - Sell the property to the bank 
+        - Mortgage the property 
+        - Unmortgage the property 
+        - Sell houses 
+        - Build houses 
+        &quot;&quot;&quot;</span>
+        <span class="s0">if not </span><span class="s1">self</span><span class="s2">.</span><span class="s1">owned_properties</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;❌ </span><span class="s0">{</span><span class="s1">self</span><span class="s2">.</span><span class="s1">name</span><span class="s0">} </span><span class="s5">has no properties to manage.&quot;</span><span class="s2">)</span>
+            <span class="s0">return</span>
+
+        <span class="s4"># Let the player select a property</span>
+        <span class="s1">selected_property </span><span class="s2">= </span><span class="s1">self</span><span class="s2">.</span><span class="s1">select_property</span><span class="s2">(</span><span class="s5">&quot;manage&quot;</span><span class="s2">)</span>
+        <span class="s0">if not </span><span class="s1">selected_property</span><span class="s2">:</span>
+            <span class="s0">return</span>
+
+        <span class="s0">while True</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">\n</span><span class="s5">🏠 Managing </span><span class="s0">{</span><span class="s1">selected_property</span><span class="s2">.</span><span class="s1">name</span><span class="s0">}</span><span class="s5">:&quot;</span><span class="s2">)</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;💰 Balance:&quot;</span><span class="s2">, </span><span class="s1">self</span><span class="s2">.</span><span class="s1">balance</span><span class="s2">)</span>
+
+            <span class="s4"># Dynamically generate available options</span>
+            <span class="s1">options </span><span class="s2">= {}</span>
+            <span class="s1">option_number </span><span class="s2">= </span><span class="s3">1</span>
+
+            <span class="s0">if </span><span class="s1">selected_property</span><span class="s2">.</span><span class="s1">houses </span><span class="s2">== </span><span class="s3">0</span><span class="s2">:  </span><span class="s4"># Selling only possible when no houses exist</span>
+                <span class="s1">options</span><span class="s2">[</span><span class="s1">option_number</span><span class="s2">] = </span><span class="s5">&quot;Sell the property to the bank&quot;</span>
+                <span class="s1">option_number </span><span class="s2">+= </span><span class="s3">1</span>
+            <span class="s0">if not </span><span class="s1">selected_property</span><span class="s2">.</span><span class="s1">mortgaged</span><span class="s2">:</span>
+                <span class="s1">options</span><span class="s2">[</span><span class="s1">option_number</span><span class="s2">] = </span><span class="s5">&quot;Mortgage the property&quot;</span>
+                <span class="s1">option_number </span><span class="s2">+= </span><span class="s3">1</span>
+            <span class="s0">if </span><span class="s1">selected_property</span><span class="s2">.</span><span class="s1">mortgaged</span><span class="s2">:</span>
+                <span class="s1">options</span><span class="s2">[</span><span class="s1">option_number</span><span class="s2">] = </span><span class="s5">&quot;Unmortgage the property&quot;</span>
+                <span class="s1">option_number </span><span class="s2">+= </span><span class="s3">1</span>
+            <span class="s0">if </span><span class="s1">selected_property</span><span class="s2">.</span><span class="s1">houses </span><span class="s2">&gt; </span><span class="s3">0</span><span class="s2">:</span>
+                <span class="s1">options</span><span class="s2">[</span><span class="s1">option_number</span><span class="s2">] = </span><span class="s5">&quot;Sell houses from the property&quot;</span>
+                <span class="s1">option_number </span><span class="s2">+= </span><span class="s3">1</span>
+            <span class="s0">if </span><span class="s1">selected_property</span><span class="s2">.</span><span class="s1">completed </span><span class="s0">and </span><span class="s1">selected_property</span><span class="s2">.</span><span class="s1">houses </span><span class="s2">&lt; </span><span class="s3">5</span><span class="s2">:</span>
+                <span class="s1">options</span><span class="s2">[</span><span class="s1">option_number</span><span class="s2">] = </span><span class="s5">&quot;Build houses on the property&quot;</span>
+                <span class="s1">option_number </span><span class="s2">+= </span><span class="s3">1</span>
+
+            <span class="s4"># Show available options</span>
+            <span class="s0">for </span><span class="s1">key</span><span class="s2">, </span><span class="s1">value </span><span class="s0">in </span><span class="s1">options</span><span class="s2">.</span><span class="s1">items</span><span class="s2">():</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">key</span><span class="s0">}</span><span class="s5">. </span><span class="s0">{</span><span class="s1">value</span><span class="s0">}</span><span class="s5">&quot;</span><span class="s2">)</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s5">f&quot;</span><span class="s0">{</span><span class="s1">option_number</span><span class="s0">}</span><span class="s5">. Exit Property Management&quot;</span><span class="s2">)  </span><span class="s4"># Exit option</span>
+
+            <span class="s4"># Get player's choice</span>
+            <span class="s0">try</span><span class="s2">:</span>
+                <span class="s1">choice </span><span class="s2">= </span><span class="s1">int</span><span class="s2">(</span><span class="s1">input</span><span class="s2">(</span><span class="s5">&quot;Enter the number of your choice: &quot;</span><span class="s2">))</span>
+                <span class="s0">if </span><span class="s1">choice </span><span class="s0">not in </span><span class="s1">options </span><span class="s0">and </span><span class="s1">choice </span><span class="s2">!= </span><span class="s1">option_number</span><span class="s2">:</span>
+                    <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;❌ Invalid choice. Try again.&quot;</span><span class="s2">)</span>
+                    <span class="s0">continue</span>
+            <span class="s0">except </span><span class="s1">ValueError</span><span class="s2">:</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;❌ Please enter a valid number.&quot;</span><span class="s2">)</span>
+                <span class="s0">continue</span>
+
+            <span class="s4"># Execute the chosen option</span>
+            <span class="s0">if </span><span class="s1">choice </span><span class="s2">== </span><span class="s1">option_number</span><span class="s2">:  </span><span class="s4"># Exit</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s5">&quot;🏠 Exiting property management.&quot;</span><span class="s2">)</span>
+                <span class="s0">return</span>
+            <span class="s0">elif </span><span class="s1">options</span><span class="s2">[</span><span class="s1">choice</span><span class="s2">] == </span><span class="s5">&quot;Sell the property to the bank&quot;</span><span class="s2">:</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">game</span><span class="s2">.</span><span class="s1">bank</span><span class="s2">.</span><span class="s1">sell_property_to_the_bank</span><span class="s2">(</span><span class="s1">selected_property</span><span class="s2">)</span>
+            <span class="s0">elif </span><span class="s1">options</span><span class="s2">[</span><span class="s1">choice</span><span class="s2">] == </span><span class="s5">&quot;Mortgage the property&quot;</span><span class="s2">:</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">game</span><span class="s2">.</span><span class="s1">bank</span><span class="s2">.</span><span class="s1">mortgage_property</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">selected_property</span><span class="s2">)</span>
+                <span class="s1">selected_property</span><span class="s2">.</span><span class="s1">mortgage</span><span class="s2">()</span>
+            <span class="s0">elif </span><span class="s1">options</span><span class="s2">[</span><span class="s1">choice</span><span class="s2">] == </span><span class="s5">&quot;Unmortgage the property&quot;</span><span class="s2">:</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">game</span><span class="s2">.</span><span class="s1">bank</span><span class="s2">.</span><span class="s1">unmortgage_property</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">selected_property</span><span class="s2">)</span>
+                <span class="s1">selected_property</span><span class="s2">.</span><span class="s1">unmortgage</span><span class="s2">()</span>
+            <span class="s0">elif </span><span class="s1">options</span><span class="s2">[</span><span class="s1">choice</span><span class="s2">] == </span><span class="s5">&quot;Sell houses from the property&quot;</span><span class="s2">:</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">game</span><span class="s2">.</span><span class="s1">bank</span><span class="s2">.</span><span class="s1">sell_houses_to_the_bank</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">selected_property</span><span class="s2">)</span>
+            <span class="s0">elif </span><span class="s1">options</span><span class="s2">[</span><span class="s1">choice</span><span class="s2">] == </span><span class="s5">&quot;Build houses on the property&quot;</span><span class="s2">:</span>
+                <span class="s1">number_of_houses </span><span class="s2">= </span><span class="s1">input</span><span class="s2">(</span><span class="s5">&quot;Enter the numbers of houses you want to build: &quot;</span><span class="s2">)</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">game</span><span class="s2">.</span><span class="s1">bank</span><span class="s2">.</span><span class="s1">build</span><span class="s2">(</span><span class="s1">number_of_houses</span><span class="s2">, </span><span class="s1">selected_property</span><span class="s2">, </span><span class="s1">self</span><span class="s2">)</span>
+
+</pre>
+</body>
+</html>
