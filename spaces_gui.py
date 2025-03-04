@@ -1,13 +1,20 @@
 import pygame
 
 class SpacesGUI:
-    def __init__(self, rect, name, color, orientation):
-        """Initialize a single Monopoly board space."""
-        self.rect = rect  # Position and size
-        self.name = name  # Tile name
-        self.color = color  # Property color (if applicable)
-        self.orientation = orientation  # Tile orientation (top, bottom, left, right)
+    def __init__(self, rect, name, color, orientation, price=None):
+        """Initializes a board space with visual properties and an optional price."""
+        self.rect = rect
+        self.name = name
+        self.color = color
+        self.orientation = orientation
+        self.price = price
+        self.owner = "Unowned"  # Default owner status
+        self.highlighted = False
 
+        # Property rent calculation (10% of the price, can be adjusted)
+        self.rent = int(self.price * 0.1) if self.price else None
+
+        # Property color mappings
         self.property_colors = {
             "Brown": (139, 69, 19), "Blue": (135, 206, 250), "Purple": (128, 0, 128),
             "Orange": (255, 165, 0), "Red": (255, 0, 0), "Yellow": (255, 255, 0),
@@ -15,16 +22,12 @@ class SpacesGUI:
             "Utilities": (255, 255, 255), "Take card": (255, 255, 255)
         }
 
-        self.highlighted = False  # Track if the space is being hovered
-
     def draw(self, screen):
-        """Draw the individual space with proper text and color bars."""
-        pygame.draw.rect(screen, (255, 255, 255), self.rect)  # White tile background
-        pygame.draw.rect(screen, (0, 0, 0), self.rect, 2)  # Black border
+        """Draws the property space on the board."""
+        pygame.draw.rect(screen, (255, 255, 255), self.rect)
+        pygame.draw.rect(screen, (0, 0, 0), self.rect, 2)
 
-        # Draw property color bar facing inward
         color_bar_size = self.rect.height // 7
-
         if self.color and self.color in self.property_colors:
             if self.orientation == "top":
                 pygame.draw.rect(screen, self.property_colors[self.color],
@@ -41,31 +44,17 @@ class SpacesGUI:
                 pygame.draw.rect(screen, self.property_colors[self.color],
                                  (self.rect.x, self.rect.y, color_bar_size, self.rect.height))
 
-        # **Text Rendering Fix for Long Names**
-        font_size = int(self.rect.height * 0.22)  # Standard font size
+        font_size = int(self.rect.height * 0.22)
         font = pygame.font.Font(None, font_size)
 
         words = self.name.split()
+        if len(words) == 3:
+            line1, line2, line3 = words[0], words[1], words[2]
+        elif len(words) == 2:
+            line1, line2, line3 = words[0], words[1], ""
+        else:
+            line1, line2, line3 = self.name, "", ""
 
-        # **Special Formatting for "The Angel Delights"**
-        if self.name.lower() == "the angel delights":
-            line1 = "The Angel"
-            line2 = "Delights"
-            line3 = ""
-        elif len(words) == 3:  # Split into 3 lines
-            line1 = words[0]
-            line2 = words[1]
-            line3 = words[2]
-        elif len(words) == 2:  # Standard 2-line format
-            line1 = words[0]
-            line2 = words[1]
-            line3 = ""
-        else:  # Single-word names stay as one line
-            line1 = self.name
-            line2 = ""
-            line3 = ""
-
-        # **Center text properly**
         text_surface1 = font.render(line1, True, (0, 0, 0))
         text_surface2 = font.render(line2, True, (0, 0, 0))
         text_surface3 = font.render(line3, True, (0, 0, 0)) if line3 else None
@@ -79,10 +68,43 @@ class SpacesGUI:
         if text_surface3:
             screen.blit(text_surface3, text_rect3)
 
-        # Draw highlight effect if hovered
         if self.highlighted:
-            pygame.draw.rect(screen, (255, 255, 0), self.rect, 4)  # Yellow border for hover effect
+            pygame.draw.rect(screen, (255, 255, 0), self.rect, 4)
 
     def set_highlight(self, highlight=True):
-        """Enable or disable highlighting for this space."""
+        """Sets the highlight effect for the space."""
         self.highlighted = highlight
+
+    def draw_popup(self, screen, dice_button_x, dice_button_y, dice_button_width):
+        """Draws a floating pop-up centered above the Dice Roll button."""
+        if self.highlighted and self.price:  # Only show pop-up for properties
+            popup_width, popup_height = 250, 140  # Adjusted size for clarity
+
+            # **Fixed Position**: Centered above the Dice Roll button
+            popup_x = dice_button_x + (dice_button_width // 2) - (popup_width // 2)
+            popup_y = dice_button_y - popup_height - 10  # Positioned above the button
+
+            # Ensure the popup doesn't go off-screen
+            if popup_x < 10:
+                popup_x = 10  # Prevent going too far left
+            if popup_x + popup_width > screen.get_width():
+                popup_x = screen.get_width() - popup_width - 10  # Prevent going too far right
+
+            # Draw pop-up box
+            popup_rect = pygame.Rect(popup_x, popup_y, popup_width, popup_height)
+            pygame.draw.rect(screen, (240, 240, 240), popup_rect, border_radius=10)  # Light gray background
+            pygame.draw.rect(screen, (0, 0, 0), popup_rect, 2)  # Black border
+
+            # Property Info
+            font = pygame.font.Font(None, 28)
+            text_name = font.render(self.name, True, (0, 0, 0))
+            text_price = font.render(f"💰 Price: ${self.price}", True, (0, 0, 0))
+            text_rent = font.render(f"💵 Rent: ${self.rent}", True, (0, 0, 0)) if self.rent else None
+            text_owner = font.render(f"👤 Owner: {self.owner}", True, (0, 0, 0))
+
+            # Render text inside pop-up
+            screen.blit(text_name, (popup_x + 10, popup_y + 10))
+            screen.blit(text_price, (popup_x + 10, popup_y + 40))
+            if text_rent:
+                screen.blit(text_rent, (popup_x + 10, popup_y + 65))
+            screen.blit(text_owner, (popup_x + 10, popup_y + 90))

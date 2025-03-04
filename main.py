@@ -3,7 +3,6 @@ from game_gui import GameGUI
 import pygame
 
 class Main:
-    # Run the game
     if __name__ == "__main__":
         try:
             game_gui = GameGUI()
