@@ -77,23 +77,20 @@ class SpacesGUI:
 
     def draw_popup(self, screen, dice_button_x, dice_button_y, dice_button_width):
         """Draws a floating pop-up centered above the Dice Roll button."""
-        if self.highlighted and self.price:  # Only show pop-up for properties
-            popup_width, popup_height = 250, 140  # Adjusted size for clarity
+        if self.highlighted and self.price:
+            popup_width, popup_height = 250, 140
 
-            # **Fixed Position**: Centered above the Dice Roll button
             popup_x = dice_button_x + (dice_button_width // 2) - (popup_width // 2)
-            popup_y = dice_button_y - popup_height - 10  # Positioned above the button
+            popup_y = dice_button_y - popup_height - 10
 
-            # Ensure the popup doesn't go off-screen
             if popup_x < 10:
-                popup_x = 10  # Prevent going too far left
+                popup_x = 10
             if popup_x + popup_width > screen.get_width():
-                popup_x = screen.get_width() - popup_width - 10  # Prevent going too far right
+                popup_x = screen.get_width() - popup_width - 10
 
-            # Draw pop-up box
             popup_rect = pygame.Rect(popup_x, popup_y, popup_width, popup_height)
-            pygame.draw.rect(screen, (240, 240, 240), popup_rect, border_radius=10)  # Light gray background
-            pygame.draw.rect(screen, (0, 0, 0), popup_rect, 2)  # Black border
+            pygame.draw.rect(screen, (240, 240, 240), popup_rect, border_radius=10)
+            pygame.draw.rect(screen, (0, 0, 0), popup_rect, 2)
 
             # Property Info
             font = pygame.font.Font(None, 28)

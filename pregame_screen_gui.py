@@ -25,7 +25,6 @@ class PreGameScreen:
         pygame.mixer.init()
         self.click_sound = pygame.mixer.Sound("assets/click.wav")
 
-        # 📌 Buttons
         self.start_button_rect = pygame.Rect(self.width // 2 - 75, self.height - 100, 150, 50)
         self.normal_button_rect = pygame.Rect(100, 150, 200, 50)
         self.abridged_button_rect = pygame.Rect(400, 150, 200, 50)

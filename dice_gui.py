@@ -92,23 +92,19 @@ class DiceGUI:
             elapsed_time = current_time - self.animation_start_time
 
             if elapsed_time < self.animation_duration:
-                # Change the dice face rapidly
-                if current_time - self.last_animation_time > 0.1:  # Change dice face every 100ms
+                if current_time - self.last_animation_time > 0.1:
                     self.dice_result = (random.randint(1, 6), random.randint(1, 6))
                     self.last_animation_time = current_time
 
-                # Add a shake effect with slight rotation
-                self.dice_rotation_angle = math.sin(elapsed_time * 10) * 10  # Smooth shake effect
+                self.dice_rotation_angle = math.sin(elapsed_time * 10) * 10
 
-                # Add a bouncing effect (up and down movement)
-                self.bounce_offset = int(math.sin(elapsed_time * 15) * 5)  # Bounces up and down by 5 pixels
+                self.bounce_offset = int(math.sin(elapsed_time * 15) * 5)
 
             else:
-                # Stop rolling and set final dice result
                 self.dice_result = (random.randint(1, 6), random.randint(1, 6))
-                self.rolling = False  # Stop animation
-                self.dice_rotation_angle = 0  # Reset rotation
-                self.bounce_offset = 0  # Reset bounce
+                self.rolling = False
+                self.dice_rotation_angle = 0
+                self.bounce_offset = 0
 
     def get_dice_result(self):
         """Returns the last dice roll result."""
